@@ -1,4 +1,6 @@
 {
+    "name": "lion-shop/lion-cart",
+    "description": "Basic shopping cart module, and one of the core modules of the lion cart system",
     "require-dev": {
         "phpunit/phpunit": "^6.5"
     },
