@@ -1,0 +1,2 @@
+# LionCart
+Core LionCart Module
