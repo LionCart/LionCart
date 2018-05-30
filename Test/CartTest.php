@@ -1,12 +1,17 @@
 <?php
-namespace LionCart\Test;
+namespace LionShop\LionCart\Test;
 
 require('./vendor/autoload.php');
 
 use PHPUnit\Framework\TestCase;
-use \LionCart\Cart;
+use LionShop\LionCart\Cart;
 
 class CartTest extends TestCase {
+  
+  public function setUp() {
+    $cart = Cart::initialize();
+    $cart->store->truncate();
+  }
 
   public function testConstruct() {
     $cart = Cart::initialize();

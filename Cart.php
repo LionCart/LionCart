@@ -1,8 +1,8 @@
 <?php
 
-namespace LionCart;
+namespace LionShop\LionCart;
 use Ramsey\Uuid\Uuid;
-use LionCart\Store\CartStore;
+use LionShop\LionCart\Store\CartStore;
 
 /**
  *

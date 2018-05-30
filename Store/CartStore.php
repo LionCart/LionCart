@@ -1,16 +1,13 @@
 <?php
-namespace LionCart\Store;
+namespace LionShop\LionCart\Store;
 
-class CartStore {
-  
-  protected $client;
+use LionShop\LionCart\Store\Base;
+
+class CartStore extends Base {
   
   public function __construct() {
-    if (!isset($_SERVER['MONGO_URL'])) {
-      throw new \Exception('MONGO_URL Environmental variable must be set');
-    }
-
-    $this->collection = (new \MongoDB\Client($_SERVER['MONGO_URL']))->cartStore->carts;
+    parent::__construct();
+    $this->collection = $this->database->carts;
   }
 
   public function loadItems($id) {
