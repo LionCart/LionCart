@@ -9,7 +9,7 @@ class ProductStore extends Base {
     $this->collection = $this->database->products;
   }
 
-  public function slugExists($shopId, $slug) {
-    return $this->collection->count([ 'shop_id' => $shopId, 'slug' => $slug ]) !== 0;
+  public function slugExists($slug) {
+    return $this->collection->count([ 'slug' => $slug ]) !== 0;
   }
 }

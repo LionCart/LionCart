@@ -4,6 +4,8 @@ namespace LionShop\LionCart;
 use Ramsey\Uuid\Uuid;
 use LionShop\LionCart\Store\CartStore;
 
+use LionShop\LionCart\Product;
+
 /**
  *
  */
@@ -13,9 +15,13 @@ class Cart {
   protected $meta;
   protected $total = 0;
 
+  public $store;
+  protected $product;
+
   public function __construct($id) {
     $this->id = $id;
     $this->store = new CartStore();
+    $this->product = new Product();
     $this->_loadItems();
     $this->_loadMeta();
     $this->_calculateTotal();
@@ -52,7 +58,16 @@ class Cart {
 
   public function addToCart($item) {
     $id = $item['id'];
-    
+
+    // Get the product for this item
+    $product = $this->product->get($item['id']);
+    if (!$product) {
+      throw new \Exception('Invalid product id');
+    }
+
+    $item['price'] = $product['price'];
+    $item['description'] = $product['name'];
+
     if (isset($this->items[$id])) {
       $item['qty'] = $item['qty'] + $this->items[$id]['qty'];
     }

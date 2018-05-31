@@ -5,12 +5,31 @@ require('./vendor/autoload.php');
 
 use PHPUnit\Framework\TestCase;
 use LionShop\LionCart\Cart;
+use LionShop\LionCart\Product;
 
 class CartTest extends TestCase {
   
   public function setUp() {
     $cart = Cart::initialize();
     $cart->store->truncate();
+
+    $this->products = [];
+    $prod = new Product();
+    $prod->store->truncate();
+
+    $result = $prod->create([
+      'name' => 'White T-Shirt',
+      'price' => 36.00
+    ]);
+
+    $this->products[] = $result;
+
+    $result2 = $prod->create([
+      'name' => 'Black T-Shirt',
+      'price' => 32.00
+    ]);
+
+    $this->products[] = $result2;
   }
 
   public function testConstruct() {
@@ -27,11 +46,10 @@ class CartTest extends TestCase {
   
   public function testAddToCart() {
     $cart = Cart::initialize();
+    $prodId = $this->products[0]['id'];
     $item = [
-      'id' => '001-100',
-      'description' => 'Shopable item',
-      'qty' => 1,
-      'price' => 100.00
+      'id' => $prodId,
+      'qty' => 1
     ];
 
     $cart->addToCart($item);
@@ -39,69 +57,62 @@ class CartTest extends TestCase {
     $itemCount = count($items);
     $this->assertEquals($itemCount, 1, 'should add items to cart');
     $cartItem = array_shift($items);
-    $this->assertEquals($cartItem['id'], '001-100', 'Should include the added item');
+    $this->assertEquals($cartItem['id'], $prodId, 'Should include the added item');
   }
 
   public function testAddToCartExisting() {
     $cart = Cart::initialize();
+    $prodId = $this->products[1]['id'];
     $item = [
-      'id' => '845',
-      'description' => 'Shopable Item',
-      'qty' => 1,
-      'price' => 45.00
+      'id' => $prodId,
+      'qty' => 1
     ];
     $cart->addToCart($item);
 
     $this->assertEquals(count($cart->getItems()), 1, 'Adds first item to cart');
 
-    $item['price'] = 49.37;
     $cart->addToCart($item);
     $items = $cart->getItems();
     $this->assertEquals(count($items), 1, 'Updates qty instead of direct add');
-
-    $cartItem = array_shift($items);
-    $this->assertEquals($cartItem['price'], 49.37, 'Uses the updated price');
   }
 
   public function testGetItems() {
+    $prodId = $this->products[0]['id'];
+    
     $cart = Cart::initialize();
     $items = $cart->getItems();
     $this->assertEquals($items, [], 'Should get items and should be empty');
     
     $item = [
-      'id' => '278',
-      'description' => 'Something to buy',
-      'qty' => 3,
-      'price' => 12.75
+      'id' => $prodId,
+      'qty' => 3
     ];
 
     $cart->addToCart($item);
     $this->assertEquals(count($cart->getItems()), 1, 'Adds and item to the empty cart');
-    $this->assertEquals($cart->getItems(), [ '278' =>  [
-      'id' => '278',
-      'description' => 'Something to buy',
+    $this->assertEquals($cart->getItems(), [ $prodId  =>  [
+      'id' => $prodId,
+      'description' => 'White T-Shirt',
       'qty' => 3,
-      'price' => 12.75
+      'price' => 36.00
     ] ], 'Adds the correct item to the cart items array');
   }
 
   public function testGetTotal() {
     $cart = Cart::initialize();
+    $prodIdOne = $this->products[0]['id'];
+    $prodIdTwo = $this->products[1]['id'];
     $item = [
-      'id' => '143',
-      'description' => 'Shopable Item',
-      'qty' => 1,
-      'price' => 45.00
+      'id' => $prodIdOne,
+      'qty' => 1
     ];
     $cart->addToCart($item);
     $items = $cart->getItems();
     $this->assertEquals(count($items), 1);
 
     $item2 = [
-      'id' => '787',
-      'description' => 'Shopable Item 2',
-      'qty' => 2,
-      'price' => 25.00
+      'id' => $prodIdTwo,
+      'qty' => 2
     ];
 
     $cart->addToCart($item2);
@@ -110,7 +121,7 @@ class CartTest extends TestCase {
     $this->assertEquals(count($items), 2);
 
     $total = $cart->getTotal();
-    $this->assertEquals((45.00 + ( 2 * 25.00)), $total);
+    $this->assertEquals((36.00 + ( 2 * 32.00 )), $total);
   }
 
   public function testAddMeta() {
@@ -133,29 +144,39 @@ class CartTest extends TestCase {
   public function testExistingCart() {
     $cart = Cart::initialize();
     $cartId = $cart->getId();
+    $prodId = $this->products[1]['id'];
+    $prodIdTwo = $this->products[0]['id'];
+
     $item = [
-      'id' => '392349',
-      'description' =>  'A New shirt',
-      'qty' => 1,
-      'price' => 85.00
+      'id' => $prodId,
+      'qty' => 1
     ];
     $cart->addToCart($item);
 
     $newCart = new Cart($cartId);
     $items = $newCart->getItems();
-    $this->assertEquals($items, [ '392349' => $item ]);
+    
+    $cartItem = $item;
+    $cartItem['description'] = $this->products[1]['name'];
+    $cartItem['price'] = $this->products[1]['price'];
+
+    $this->assertEquals($items, [ $prodId => $cartItem ]);
 
     $newItem = [
-      'id' => '234890',
-      'description' => 'New Pants',
-      'qty' => 3,
-      'price' => 250.00
+      'id' => $prodIdTwo,
+      'qty' => 3
     ];
 
     $newCart->addToCart($newItem);
 
     $finalCart = new Cart($cartId);
-    $this->assertEquals($finalCart->getItems(), [ '392349' => $item, '234890' => $newItem ]);
-    $this->assertEquals($finalCart->getTotal(), (( 3 * 250.00 ) + 85.00 ));
+
+    $cartItemTwo = $newItem;
+    $cartItemTwo['description'] = $this->products[0]['name'];
+    $cartItemTwo['price'] = $this->products[0]['price'];
+
+
+    $this->assertEquals($finalCart->getItems(), [ $prodId => $cartItem, $prodIdTwo => $cartItemTwo ]);
+    $this->assertEquals($finalCart->getTotal(), (( 3 * 36.00 ) + 32.00 ));
   }
 }

@@ -8,15 +8,13 @@ use LionShop\LionCart\Product;
 
 class ProductTest extends TestCase {
 
-  protected $shopId = 909339;
-
   public function setUp() {
-    $product = new Product($this->shopId);
+    $product = new Product();
     $product->store->truncate();
   }
 
   public function testCreate() {
-    $product = new Product($this->shopId);
+    $product = new Product();
 
     $_prod = $product->create([
       'name' => 'Something Great Charles',
@@ -31,7 +29,7 @@ class ProductTest extends TestCase {
    * @expectedException Exception
    */
   public function testDuplicateSlug() {
-    $product = new Product($this->shopId);
+    $product = new Product();
 
     $product->create([
       'name' => 'Product One',
@@ -48,7 +46,7 @@ class ProductTest extends TestCase {
   }
 
   public function testGetBySlug() {
-    $product = new Product($this->shopId);
+    $product = new Product();
 
     $result = $product->create([
       'name' => 'Product One',
@@ -64,7 +62,7 @@ class ProductTest extends TestCase {
   }
   
   public function testGetById() {
-    $product = new Product($this->shopId);
+    $product = new Product();
 
     $result = $product->create([
       'name' => 'Product One',
@@ -80,7 +78,7 @@ class ProductTest extends TestCase {
   }
 
   public function testList() {
-    $product = new Product($this->shopId);
+    $product = new Product();
     
     $product->create([
       'name' => 'Product One',
@@ -98,7 +96,7 @@ class ProductTest extends TestCase {
   }
 
   public function testUpdateProduct() {
-    $product = new Product($this->shopId);
+    $product = new Product();
 
     $result = $product->create([
       'name' => 'Product One',
@@ -115,7 +113,7 @@ class ProductTest extends TestCase {
    * @expectedException Exception
    */
   public function testDeleteProduct() {
-    $product = new Product($this->shopId);
+    $product = new Product();
 
     $result = $product->create([
       'name' => 'Product One',
@@ -128,23 +126,5 @@ class ProductTest extends TestCase {
     $this->assertEquals($r, true, 'Delete returns true');
   
     $p = $product->get($result['id']);
-  }
-
-  /**
-   * @expectedException Exception
-   */
-  public function testShopScope() {
-    $product = new Product($this->shopId);
-
-    $result = $product->create([
-      'name' => 'Product One',
-      'price' => 49.99
-    ]);
-    
-    $this->assertEquals($result['slug'], 'product-one');
-
-    $product2 = new Product(823489234);
-
-    $product2->get($result['slug']);
   }
 }

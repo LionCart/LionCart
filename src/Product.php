@@ -9,17 +9,11 @@ use LionShop\LionCart\Store\ProductStore;
  */
 
 class Product {
-
-  protected $shopId;
-  
-  public function __construct($shopId) {
-    $this->shopId = $shopId;  
+  public function __construct() {
     $this->store = new ProductStore();
   }
 
   public function list($query=[]) {
-    $query['shop_id'] = $this->shopId;
-
     return $this->store->get($query);
   }
 
@@ -27,7 +21,6 @@ class Product {
     if (!$prod['name']) {
       throw new \Exception('Product must have a name');
     }
-    $prod['shop_id'] = $this->shopId;
     if (!isset($prod['slug'])) {
       $prod['slug'] = str_replace(' ', '-', strtolower($prod['name']));
     }
@@ -36,14 +29,14 @@ class Product {
       $prod['status'] = 'draft';
     }
 
-    if ($this->store->slugExists($this->shopId, $prod['slug'])) {
+    if ($this->store->slugExists($prod['slug'])) {
       throw new \Exception('Duplicate Slug or Product Name');
     }
     return $this->store->insert($prod);
   }
 
   public function update($id, $prod) {
-    $query = [ 'shop_id' => $this->shopId ];
+    $query = [];
     if (strlen($id) === 24 && strspn($id,'0123456789ABCDEFabcdef') === 24) {
       $query['id'] = $id;
     } else {
@@ -54,7 +47,7 @@ class Product {
   }
 
   public function get($id) {
-    $query = [ 'shop_id' => $this->shopId ];
+    $query = [];
     if (strlen($id) === 24 && strspn($id,'0123456789ABCDEFabcdef') === 24) {
       $query['id'] = $id;
     } else {
@@ -65,6 +58,6 @@ class Product {
   }
 
   public function delete($id) {
-    return $this->store->delete([ 'shop_id' => $this->shopId, 'id' => $id ]);
+    return $this->store->delete([ 'id' => $id ]);
   }
 }
